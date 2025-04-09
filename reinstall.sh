@@ -3,9 +3,9 @@
 # shellcheck disable=SC2086
 
 set -eE
-confhome=https://raw.githubusercontent.com/herobrauni/reinstall/main
-confhome_cn=https://cnb.cool/herobrauni/reinstall/-/git/raw/main
-# confhome_cn=https://www.ghproxy.cc/https://raw.githubusercontent.com/herobrauni/reinstall/main
+confhome=https://raw.githubusercontent.com/bin456789/reinstall/main
+confhome_cn=https://cnb.cool/bin456789/reinstall/-/git/raw/main
+# confhome_cn=https://www.ghproxy.cc/https://raw.githubusercontent.com/bin456789/reinstall/main
 
 # 默认密码
 DEFAULT_PASSWORD=123@@@
@@ -76,7 +76,7 @@ Usage: $reinstall_____ anolis      7|8|23
                        [--web-port PORT]
                        [--allow-ping]
 
-Manual: https://github.com/herobrauni/reinstall
+Manual: https://github.com/bin456789/reinstall
 
 EOF
     exit 1
@@ -2850,13 +2850,6 @@ build_extra_cmdline() {
         fi
     done
 
-    # Pass LVM flag
-    if [ -n "$use_lvm" ]; then
-        extra_cmdline+=" extra_use_lvm=$use_lvm"
-    else
-        extra_cmdline+=" extra_use_lvm=0"
-    fi
-
     # 指定最终安装系统的 mirrorlist，链接有&，在grub中是特殊字符，所以要加引号
     if [ -n "$finalos_mirrorlist" ]; then
         extra_cmdline+=" extra_mirrorlist='$finalos_mirrorlist'"
@@ -3655,8 +3648,7 @@ for o in ci installer debug minimal allow-ping force-cn help \
     allow-ping: \
     commit: \
     force: \
-    force-old-windows-setup: \
-    lvm; do
+    force-old-windows-setup:; do
     [ -n "$long_opts" ] && long_opts+=,
     long_opts+=$o
 done
@@ -3697,10 +3689,6 @@ while true; do
         ;;
     --allow-ping)
         allow_ping=1
-        shift
-    ;;
-    --lvm)
-        use_lvm=1
         shift
         ;;
     --force-cn)

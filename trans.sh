@@ -1263,61 +1263,6 @@ EOF
 install_alpine() {
     info "install alpine"
 
-    if [ "$use_lvm" = "1" ]; then
-        info "LVM mode enabled"
-
-        apk add lvm2 parted gdisk util-linux
-
-        find_xda
-
-        # Wipe existing partitions
-        sgdisk --zap-all /dev/$xda || true
-        wipefs -a /dev/$xda || true
-
-        # Create partitions: 512M boot, rest LVM
-        parted -s /dev/$xda mklabel gpt
-        parted -s /dev/$xda mkpart primary fat32 1MiB 513MiB
-        parted -s /dev/$xda set 1 boot on
-        parted -s /dev/$xda mkpart primary 513MiB 100%
-
-        update_part
-
-        boot_part=/dev/${xda}1
-        lvm_part=/dev/${xda}2
-
-        mkfs.vfat -F32 $boot_part
-
-        # Setup LVM
-        apk add lvm2
-        modprobe dm_mod || true
-        pvcreate $lvm_part
-        vgcreate vg0 $lvm_part
-
-        # Create logical volumes
-        lvcreate -L 2G -n swap vg0
-        lvcreate -l 100%FREE -n root vg0
-
-        # Format and mount
-        mkfs.ext4 /dev/vg0/root
-        mkswap /dev/vg0/swap
-
-        mkdir -p /os
-        mount /dev/vg0/root /os
-
-        mkdir -p /os/boot/efi
-        mount $boot_part /os/boot/efi
-
-        swapon /dev/vg0/swap
-
-        # Ensure LVM inside chroot
-        chroot /os apk add lvm2 || true
-
-        # Regenerate initramfs with LVM support
-        chroot /os mkinitfs -c /etc/mkinitfs/mkinitfs.conf -b / || true
-
-        return
-    fi
-
     need_ram=512
     swap_size=$(get_need_swap_size $need_ram)
     [ "$swap_size" -gt 0 ] && hack_lowram=true || hack_lowram=false
@@ -2506,6 +2451,7 @@ create_part() {
         # https://gitlab.alpinelinux.org/alpine/alpine-conf/-/blob/3.18.1/setup-disk.in?ref_type=tags#L908
         # 而且 alpine 的 extlinux 不兼容 64bit ext4
         [ "$distro" = alpine ] && ext4_opts="-O ^64bit" || ext4_opts=
+        apk add lvm2
         if is_efi; then
             # efi
             parted /dev/$xda -s -- \
@@ -2515,8 +2461,13 @@ create_part() {
                 set 1 boot on
             update_part
 
-            mkfs.fat /dev/$xda*1                #1 efi
-            mkfs.ext4 -F $ext4_opts /dev/$xda*2 #2 os
+            mkfs.fat /dev/${xda}*1
+
+            pvcreate /dev/${xda}*2
+            vgcreate vg0 /dev/${xda}*2
+            lvcreate -n root -l 100%FREE vg0
+
+            mkfs.ext4 -F $ext4_opts /dev/vg0/root
         elif is_xda_gt_2t; then
             # bios > 2t
             parted /dev/$xda -s -- \
@@ -2526,17 +2477,24 @@ create_part() {
                 set 1 bios_grub on
             update_part
 
-            echo                                #1 bios_boot
-            mkfs.ext4 -F $ext4_opts /dev/$xda*2 #2 os
+            pvcreate /dev/${xda}*2
+            vgcreate vg0 /dev/${xda}*2
+            lvcreate -n root -l 100%FREE vg0
+
+            mkfs.ext4 -F $ext4_opts /dev/vg0/root
         else
-            # bios
+            # bios <= 2t
             parted /dev/$xda -s -- \
                 mklabel msdos \
                 mkpart primary ext4 1MiB 100% \
                 set 1 boot on
             update_part
 
-            mkfs.ext4 -F $ext4_opts /dev/$xda*1 #1 os
+            pvcreate /dev/${xda}*1
+            vgcreate vg0 /dev/${xda}*1
+            lvcreate -n root -l 100%FREE vg0
+
+            mkfs.ext4 -F $ext4_opts /dev/vg0/root
         fi
     else
         # 安装红帽系或ubuntu
@@ -6567,7 +6525,7 @@ trans() {
 
     # 先检查 modloop 是否正常
     # 防止格式化硬盘后，缺少 ext4 模块导致 mount 失败
-    # https://github.com/herobrauni/reinstall/issues/136
+    # https://github.com/bin456789/reinstall/issues/136
     ensure_service_started modloop
 
     cat /proc/cmdline
@@ -6722,7 +6680,7 @@ mount / -o remount,size=100%
 
 # 同步时间
 # 1. 可以防止访问 https 出错
-# 2. 可以防止 https://github.com/herobrauni/reinstall/issues/223
+# 2. 可以防止 https://github.com/bin456789/reinstall/issues/223
 #    E: Release file for http://security.ubuntu.com/ubuntu/dists/noble-security/InRelease is not valid yet (invalid for another 5h 37min 18s).
 #    Updates for this repository will not be applied.
 # 3. 不能直接读取 rtc，因为默认情况 windows rtc 是本地时间，linux rtc 是 utc 时间
