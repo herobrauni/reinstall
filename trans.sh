@@ -1266,7 +1266,7 @@ install_alpine() {
     if [ "$use_lvm" = "1" ]; then
         info "LVM mode enabled"
 
-        apk add lvm2
+        apk add lvm2 parted gdisk util-linux
 
         find_xda
 
