@@ -1390,7 +1390,7 @@ install_alpine() {
     echo "brauni:$(get_password_linux_sha512)" | chroot $os_dir chpasswd -e
     set_ssh_keys $os_dir
     disable_password_login $os_dir
-    chroot $os_dir apk add doas
+    chroot $os_dir apk add doas python3
     echo "permit persist :wheel" >>$os_dir/etc/doas.conf
     echo "permit nopass :wheel" >>$os_dir/etc/doas.conf
     chroot $os_dir adduser brauni wheel
