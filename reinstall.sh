@@ -3506,6 +3506,10 @@ This script is outdated, please download reinstall.sh again.
         remove_useless_initrd_files
     fi
 
+    info "hostname"
+    info $hostname
+    echo $hostname > $initrd_dir/configs/hostname
+
     # 重建
     # 注意要用 cpio -H newc 不要用 cpio -c ，不同版本的 -c 作用不一样，很坑
     # -c    Use the old portable (ASCII) archive format
