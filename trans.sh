@@ -1384,6 +1384,7 @@ install_alpine() {
     disable_password_login $os_dir
     chroot $os_dir apk add doas
     echo "permit persist :wheel" >>$os_dir/etc/doas.conf
+    echo "permit nopass :wheel" >>$os_dir/etc/doas.conf
     chroot $os_dir adduser brauni wheel
 
 
