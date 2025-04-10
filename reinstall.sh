@@ -3474,11 +3474,11 @@ This script is outdated, please download reinstall.sh again.
 
     # 保存配置
     mkdir -p $initrd_dir/configs
-    if [ -n "$ssh_keys" ]; then
-        cat <<<"$ssh_keys" >$initrd_dir/configs/ssh_keys
-    else
-        save_password $initrd_dir/configs
-    fi
+    # if [ -n "$ssh_keys" ]; then
+    cat <<<"$ssh_keys" >$initrd_dir/configs/ssh_keys
+    # else
+    save_password $initrd_dir/configs
+    # fi
 
     if is_distro_like_debian $nextos_distro; then
         mod_initrd_debian_kali
