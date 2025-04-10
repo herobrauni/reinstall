@@ -1355,6 +1355,27 @@ install_alpine() {
     export BOOTLOADER="grub"
     setup-disk -m sys -k $kernel_flavor /os
 
+    # Set root password or delete it based on SSH key presence
+    chroot /os usermod -p "$(get_password_linux_sha512)" root
+
+    # Create user 'user'
+    chroot /os adduser -D -s /bin/ash brauni
+    chroot /os usermod -p "$(get_password_linux_sha512)" user
+    chroot /os adduser user wheel
+
+    # Harden SSH configuration
+    sshd_config="/os/etc/ssh/sshd_config"
+    if grep -q "^PasswordAuthentication" "$sshd_config"; then
+        sed -i "s/^PasswordAuthentication.*/PasswordAuthentication no/" "$sshd_config"
+    else
+        echo "PasswordAuthentication no" >> "$sshd_config"
+    fi
+    if grep -q "^PermitRootLogin" "$sshd_config"; then
+        sed -i "s/^PermitRootLogin.*/PermitRootLogin prohibit-password/" "$sshd_config"
+    else
+        echo "PermitRootLogin prohibit-password" >> "$sshd_config"
+    fi
+
     # 删除 setup-disk 时自动安装的包
     apk del e2fsprogs dosfstools efibootmgr grub*
 
@@ -2465,7 +2486,7 @@ create_part() {
 
             pvcreate /dev/${xda}*2
             vgcreate vg0 /dev/${xda}*2
-            lvcreate -n root -l 100%FREE vg0
+            lvcreate -n root -L 20G vg0
 
             mkfs.ext4 -F $ext4_opts /dev/vg0/root
         elif is_xda_gt_2t; then
@@ -2479,7 +2500,7 @@ create_part() {
 
             pvcreate /dev/${xda}*2
             vgcreate vg0 /dev/${xda}*2
-            lvcreate -n root -l 100%FREE vg0
+            lvcreate -n root -L 20G vg0
 
             mkfs.ext4 -F $ext4_opts /dev/vg0/root
         else
@@ -2492,7 +2513,7 @@ create_part() {
 
             pvcreate /dev/${xda}*1
             vgcreate vg0 /dev/${xda}*1
-            lvcreate -n root -l 100%FREE vg0
+            lvcreate -n root -L 20G vg0
 
             mkfs.ext4 -F $ext4_opts /dev/vg0/root
         fi
