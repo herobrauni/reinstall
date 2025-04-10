@@ -3653,6 +3653,7 @@ for o in ci installer debug minimal allow-ping force-cn help \
     allow-ping: \
     commit: \
     force: \
+    hostname: \
     force-old-windows-setup:; do
     [ -n "$long_opts" ] && long_opts+=,
     long_opts+=$o
@@ -3669,6 +3670,10 @@ while true; do
     case "$1" in
     -h | --help)
         usage_and_exit
+        ;;
+    --hostname)
+        hostname=$2
+        shift 2
         ;;
     --commit)
         commit=$2
