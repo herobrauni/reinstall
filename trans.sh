@@ -1421,7 +1421,7 @@ install_alpine() {
     # brauni fix
     echo "root:$(get_password_linux_sha512)" | chroot $os_dir chpasswd -e
     chroot /os adduser brauni --disabled-password
-    set_ssh_keys
+    set_ssh_keys $os_dir
     
     
     # 下载 fix-eth-name
