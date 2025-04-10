@@ -3673,6 +3673,9 @@ set_ssh_keys() {
         mkdir -p $os_dir/home/brauni/.ssh
         cat /configs/ssh_keys >$os_dir/root/.ssh/authorized_keys
         cat /configs/ssh_keys >$os_dir/home/brauni/.ssh/authorized_keys
+        chroot $os_dir chown -R brauni:brauni /home/brauni/.ssh
+        chroot $os_dir chmod 700 /home/brauni/.ssh
+        chroot $os_dir chmod 600 /home/brauni/.ssh/authorized_keys
     )
 }
 
