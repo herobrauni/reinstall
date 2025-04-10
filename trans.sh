@@ -1357,27 +1357,27 @@ install_alpine() {
     export BOOTLOADER="grub"
     setup-disk -m sys -k $kernel_flavor /os
 
-    # Set root password or delete it based on SSH key presence
-    chroot /os usermod -p "$(get_password_linux_sha512)" root
+    # # Set root password or delete it based on SSH key presence
+    # chroot /os usermod -p "$(get_password_linux_sha512)" root
 
-    # Create user 'brauni'
-    info "USER BRAUNI"
-    chroot /os adduser -D -s /bin/ash brauni
-    chroot /os usermod -p "$(get_password_linux_sha512)" user
-    chroot /os adduser user wheel
+    # # Create user 'brauni'
+    # info "USER BRAUNI"
+    # chroot /os adduser -D -s /bin/ash brauni
+    # chroot /os usermod -p "$(get_password_linux_sha512)" user
+    # chroot /os adduser user wheel
 
-    # Harden SSH configuration
-    sshd_config="/os/etc/ssh/sshd_config"
-    if grep -q "^PasswordAuthentication" "$sshd_config"; then
-        sed -i "s/^PasswordAuthentication.*/PasswordAuthentication no/" "$sshd_config"
-    else
-        echo "PasswordAuthentication no" >> "$sshd_config"
-    fi
-    if grep -q "^PermitRootLogin" "$sshd_config"; then
-        sed -i "s/^PermitRootLogin.*/PermitRootLogin prohibit-password/" "$sshd_config"
-    else
-        echo "PermitRootLogin prohibit-password" >> "$sshd_config"
-    fi
+    # # Harden SSH configuration
+    # sshd_config="/os/etc/ssh/sshd_config"
+    # if grep -q "^PasswordAuthentication" "$sshd_config"; then
+    #     sed -i "s/^PasswordAuthentication.*/PasswordAuthentication no/" "$sshd_config"
+    # else
+    #     echo "PasswordAuthentication no" >> "$sshd_config"
+    # fi
+    # if grep -q "^PermitRootLogin" "$sshd_config"; then
+    #     sed -i "s/^PermitRootLogin.*/PermitRootLogin prohibit-password/" "$sshd_config"
+    # else
+    #     echo "PermitRootLogin prohibit-password" >> "$sshd_config"
+    # fi
 
     # 删除 setup-disk 时自动安装的包
     apk del e2fsprogs dosfstools efibootmgr grub*
@@ -1418,6 +1418,12 @@ install_alpine() {
     #     set_ssh_keys_and_del_password /os
     # fi
 
+    # brauni fix
+    echo "root:$(get_password_linux_sha512)" | chroot $os_dir chpasswd -e
+    chroot /os adduser brauni --disabled-password
+    set_ssh_keys
+    
+    
     # 下载 fix-eth-name
     download "$confhome/fix-eth-name.sh" /os/fix-eth-name.sh
     download "$confhome/fix-eth-name.initd" /os/etc/init.d/fix-eth-name
@@ -3655,6 +3661,19 @@ set_ssh_keys_and_del_password() {
 
     # 删除密码
     chroot $os_dir passwd -d root
+}
+set_ssh_keys() {
+    os_dir=$1
+    info 'set ssh keys'
+
+    # 添加公钥
+    (
+        umask 077
+        mkdir -p $os_dir/root/.ssh
+        mkdir -p $os_dir/brauni/.ssh
+        cat /configs/ssh_keys >$os_dir/root/.ssh/authorized_keys
+        cat /configs/ssh_keys >$os_dir/brauni/.ssh/authorized_keys
+    )
 }
 
 # 除了 alpine 都会用到
