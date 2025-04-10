@@ -2512,7 +2512,11 @@ create_part() {
             # mkfs.ext4 -F $ext4_opts /dev/vg0/root
             # info "81"
             info "6"
-            # bios <= 2t
+            apk add wipefs sgdisk
+            # wipefs -a /dev/$xda
+            sgdisk -Z /dev/$xda
+            update_part
+            info "61"
             parted /dev/$xda -s -- \
                 mklabel msdos \
                 mkpart primary ext4 1MiB 100% \
@@ -2520,11 +2524,11 @@ create_part() {
             update_part
 
             info "7"
-            pvcreate /dev/${xda}*1 -f -y
+            pvcreate /dev/${xda}*1 -ff -y
             info "71"
             vgcreate vg0 /dev/${xda}*1 -f -y
             info "72"
-            lvcreate -n root -L 20G vg0
+            lvcreate -n root -L 20G vg0 -y
 
             info "8"
             mkfs.ext4 -F $ext4_opts /dev/vg0/root
