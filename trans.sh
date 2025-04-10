@@ -3670,9 +3670,9 @@ set_ssh_keys() {
     (
         umask 077
         mkdir -p $os_dir/root/.ssh
-        mkdir -p $os_dir/brauni/.ssh
+        mkdir -p $os_dir/home/brauni/.ssh
         cat /configs/ssh_keys >$os_dir/root/.ssh/authorized_keys
-        cat /configs/ssh_keys >$os_dir/brauni/.ssh/authorized_keys
+        cat /configs/ssh_keys >$os_dir/home/brauni/.ssh/authorized_keys
     )
 }
 
