@@ -2857,6 +2857,11 @@ build_extra_cmdline() {
         extra_cmdline+=" extra_mirrorlist='$nextos_mirrorlist'"
     fi
 
+    # append hostname for alpine only
+    if [ "$distro" = alpine ] && [ -n "$hostname" ]; then
+        extra_cmdline+=" extra_hostname=$hostname"
+    fi
+
     # cloudcone 特殊处理
     if is_grub_dir_linked; then
         finalos_cmdline+=" extra_link_grub_dir=1"
@@ -3713,6 +3718,12 @@ while true; do
     --passwd | --password)
         [ -n "$2" ] || error_and_exit "Need value for $1"
         password=$2
+        shift 2
+        ;;
+
+    --hostname)
+        [ -n "$2" ] || error_and_exit "Need value for $1"
+        hostname=$2
         shift 2
         ;;
     --ssh-key | --public-key)

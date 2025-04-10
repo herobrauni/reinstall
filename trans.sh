@@ -1355,6 +1355,11 @@ install_alpine() {
     KERNELOPTS="$(get_ttys console=)"
     export KERNELOPTS
     export BOOTLOADER="grub"
+
+    # Set hostname if specified
+    if [ -n "$hostname" ]; then
+        echo "$hostname" > /os/etc/hostname
+    fi
     setup-disk -m sys -k $kernel_flavor /os
 
     # 删除 setup-disk 时自动安装的包
