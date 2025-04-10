@@ -2520,9 +2520,9 @@ create_part() {
             update_part
 
             info "7"
-            pvcreate /dev/${xda}*1
+            pvcreate /dev/${xda}*1 -f -y
             info "71"
-            vgcreate vg0 /dev/${xda}*1
+            vgcreate vg0 /dev/${xda}*1 -f -y
             info "72"
             lvcreate -n root -L 20G vg0
 
