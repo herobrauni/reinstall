@@ -1357,51 +1357,9 @@ install_alpine() {
     export BOOTLOADER="grub"
     setup-disk -m sys -k $kernel_flavor /os
 
-    # # Set root password or delete it based on SSH key presence
-    # chroot /os usermod -p "$(get_password_linux_sha512)" root
-
-    # # Create user 'brauni'
-    # info "USER BRAUNI"
-    # chroot /os adduser -D -s /bin/ash brauni
-    # chroot /os usermod -p "$(get_password_linux_sha512)" user
-    # chroot /os adduser user wheel
-
-    # # Harden SSH configuration
-    # sshd_config="/os/etc/ssh/sshd_config"
-    # if grep -q "^PasswordAuthentication" "$sshd_config"; then
-    #     sed -i "s/^PasswordAuthentication.*/PasswordAuthentication no/" "$sshd_config"
-    # else
-    #     echo "PasswordAuthentication no" >> "$sshd_config"
-    # fi
-    # if grep -q "^PermitRootLogin" "$sshd_config"; then
-    #     sed -i "s/^PermitRootLogin.*/PermitRootLogin prohibit-password/" "$sshd_config"
-    # else
-    #     echo "PermitRootLogin prohibit-password" >> "$sshd_config"
-    # fi
-
     # 删除 setup-disk 时自动安装的包
     apk del e2fsprogs dosfstools efibootmgr grub*
 
-    # 安装到硬盘后才安装各种应用
-    # 避免占用 Live OS 内存
-
-    # 网络
-    # udhcpc
-    # 坑1 ip -4 addr 无法知道是否是 dhcp
-    # 坑2 networking 服务不会运行 udhcpc6
-    # 坑3 h3c 移动云电脑 udhcpc6 无法获取 dhcpv6
-
-    # dhcpcd
-    # 坑1 slaac默认开了隐私保护，造成ip和后台面板不一致
-
-    # slaac方案1: udhcpc + rdnssd
-    # slaac方案2: dhcpcd + 关闭隐私保护
-    # dhcpv6方案: dhcpcd
-
-    # 综合使用dhcpcd方案
-    # 1 无需改动/etc/network/interfaces，自动根据ra使用slaac和dhcpv6
-    # 2 自带rdnss支持
-    # 3 唯一要做的是关闭隐私保护
 
     # 安装 dhcpcd
     chroot /os apk add dhcpcd
@@ -1420,10 +1378,15 @@ install_alpine() {
 
     # brauni fix
     echo "root:$(get_password_linux_sha512)" | chroot $os_dir chpasswd -e
-    chroot /os adduser brauni --disabled-password
+    chroot $os_dir adduser brauni --disabled-password
+    echo "brauni:$(get_password_linux_sha512)" | chroot $os_dir chpasswd -e
     set_ssh_keys $os_dir
     disable_password_login $os_dir
-    
+    chroot $os_dir apk add doas
+    echo "permit persist :wheel" >>$os_dir/etc/doas.conf
+    chroot $os_dir adduser brauni wheel
+
+
     # 下载 fix-eth-name
     download "$confhome/fix-eth-name.sh" /os/fix-eth-name.sh
     download "$confhome/fix-eth-name.initd" /os/etc/init.d/fix-eth-name
@@ -3719,7 +3682,7 @@ allow_password_login() {
 
 disable_password_login() {
     os_dir=$1
-    change_ssh_conf "$os_dir" PasswordAuthentication no 01-PasswordAuthenticaton.conf
+    change_ssh_conf "$os_dir" PasswordAuthentication no 02-DisablePasswordAuthenticaton.conf
 }
 
 
