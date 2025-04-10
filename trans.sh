@@ -1293,7 +1293,9 @@ install_alpine() {
     # bios机器用 setup-disk 自动分区会有 boot 分区
     # 因此手动分区安装
     create_part
+    info "create part done"
     mount_part_basic_layout /os /os/boot/efi
+    info "mount_part_basic_layout part done"
 
     # 创建 swap
     if $hack_lowram; then
@@ -2484,13 +2486,17 @@ create_part() {
                 set 1 boot on
             update_part
 
+            info "1"
             mkfs.fat /dev/${xda}*1
+            info "2"
 
             pvcreate /dev/${xda}*2
             vgcreate vg0 /dev/${xda}*2
             lvcreate -n root -L 20G vg0
+            info "3"
 
             mkfs.ext4 -F $ext4_opts /dev/vg0/root
+            info "4"
         elif is_xda_gt_2t; then
             # bios > 2t
             parted /dev/$xda -s -- \
@@ -2499,13 +2505,16 @@ create_part() {
                 mkpart '" "' ext4 2MiB 100% \
                 set 1 bios_grub on
             update_part
+            info "4"
 
             pvcreate /dev/${xda}*2
             vgcreate vg0 /dev/${xda}*2
             lvcreate -n root -L 20G vg0
 
+            info "5"
             mkfs.ext4 -F $ext4_opts /dev/vg0/root
         else
+            info "6"
             # bios <= 2t
             parted /dev/$xda -s -- \
                 mklabel msdos \
@@ -2513,10 +2522,12 @@ create_part() {
                 set 1 boot on
             update_part
 
+            info "7"
             pvcreate /dev/${xda}*1
             vgcreate vg0 /dev/${xda}*1
             lvcreate -n root -L 20G vg0
 
+            info "8"
             mkfs.ext4 -F $ext4_opts /dev/vg0/root
         fi
     else
