@@ -544,6 +544,9 @@ set_config() {
 get_password_linux_sha512() {
     get_config password-linux-sha512
 }
+get_hostname() {
+    get_config hostname
+}
 
 get_password_windows_administrator_base64() {
     get_config password-windows-administrator-base64
@@ -1380,8 +1383,8 @@ install_alpine() {
     # if [ -n "$hostname" ]; then
     #     echo "$hostname" >$os_dir/etc/hostname
     # fi
-
     # brauni fix
+    echo "$(get_hostname)" >$os_dir/etc/hostname
     echo "root:$(get_password_linux_sha512)" | chroot $os_dir chpasswd -e
     chroot $os_dir adduser brauni --disabled-password
     echo "brauni:$(get_password_linux_sha512)" | chroot $os_dir chpasswd -e
