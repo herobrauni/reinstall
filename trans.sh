@@ -1358,7 +1358,8 @@ install_alpine() {
     # Set root password or delete it based on SSH key presence
     chroot /os usermod -p "$(get_password_linux_sha512)" root
 
-    # Create user 'user'
+    # Create user 'brauni'
+    info "USER BRAUNI"
     chroot /os adduser -D -s /bin/ash brauni
     chroot /os usermod -p "$(get_password_linux_sha512)" user
     chroot /os adduser user wheel
@@ -1411,9 +1412,9 @@ install_alpine() {
     chroot /os setup-ntp chrony || true
 
     # 设置公钥
-    if is_need_set_ssh_keys; then
-        set_ssh_keys_and_del_password /os
-    fi
+    # if is_need_set_ssh_keys; then
+    #     set_ssh_keys_and_del_password /os
+    # fi
 
     # 下载 fix-eth-name
     download "$confhome/fix-eth-name.sh" /os/fix-eth-name.sh
@@ -2473,6 +2474,7 @@ create_part() {
         # 而且 alpine 的 extlinux 不兼容 64bit ext4
         [ "$distro" = alpine ] && ext4_opts="-O ^64bit" || ext4_opts=
         apk add lvm2
+        info "Create Part LVM started"
         if is_efi; then
             # efi
             parted /dev/$xda -s -- \
