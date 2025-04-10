@@ -1377,9 +1377,9 @@ install_alpine() {
     #     set_ssh_keys_and_del_password /os
     # fi
     # Set hostname if specified
-    if [ -n "$hostname" ]; then
-        echo "$hostname" >$os_dir/etc/hostname
-    fi
+    # if [ -n "$hostname" ]; then
+    #     echo "$hostname" >$os_dir/etc/hostname
+    # fi
 
     # brauni fix
     echo "root:$(get_password_linux_sha512)" | chroot $os_dir chpasswd -e
