@@ -1356,10 +1356,6 @@ install_alpine() {
     export KERNELOPTS
     export BOOTLOADER="grub"
 
-    # Set hostname if specified
-    if [ -n "$hostname" ]; then
-        echo "$hostname" > /os/etc/hostname
-    fi
     setup-disk -m sys -k $kernel_flavor /os
 
     # 删除 setup-disk 时自动安装的包
@@ -1380,6 +1376,10 @@ install_alpine() {
     # if is_need_set_ssh_keys; then
     #     set_ssh_keys_and_del_password /os
     # fi
+    # Set hostname if specified
+    if [ -n "$hostname" ]; then
+        echo "$hostname" >$os_dir/etc/hostname
+    fi
 
     # brauni fix
     echo "root:$(get_password_linux_sha512)" | chroot $os_dir chpasswd -e
