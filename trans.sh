@@ -1422,7 +1422,7 @@ install_alpine() {
     echo "root:$(get_password_linux_sha512)" | chroot $os_dir chpasswd -e
     chroot /os adduser brauni --disabled-password
     set_ssh_keys $os_dir
-    
+    disable_password_login $os_dir
     
     # 下载 fix-eth-name
     download "$confhome/fix-eth-name.sh" /os/fix-eth-name.sh
@@ -3712,6 +3712,13 @@ allow_password_login() {
     os_dir=$1
     change_ssh_conf "$os_dir" PasswordAuthentication yes 01-PasswordAuthenticaton.conf
 }
+
+
+disable_password_login() {
+    os_dir=$1
+    change_ssh_conf "$os_dir" PasswordAuthentication no 01-PasswordAuthenticaton.conf
+}
+
 
 allow_root_password_login() {
     os_dir=$1
