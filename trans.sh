@@ -2470,7 +2470,7 @@ create_part() {
 
             pvcreate /dev/${xda}*2
             vgcreate vg0 /dev/${xda}*2
-            lvcreate -n root -L 20G vg0
+            lvcreate -n root -L 25G vg0
             info "3"
 
             mkfs.ext4 -F $ext4_opts /dev/vg0/root
@@ -2487,7 +2487,7 @@ create_part() {
 
             pvcreate /dev/${xda}*2
             vgcreate vg0 /dev/${xda}*2
-            lvcreate -n root -L 20G vg0
+            lvcreate -n root -L 25G vg0
 
             info "5"
             mkfs.ext4 -F $ext4_opts /dev/vg0/root
@@ -2506,7 +2506,7 @@ create_part() {
             # info "71"
             # vgcreate vg0 /dev/$xda
             # info "72"
-            # lvcreate -n root -L 20G vg0
+            # lvcreate -n root -L 25G vg0
 
             # info "8"
             # mkfs.ext4 -F $ext4_opts /dev/vg0/root
@@ -2528,7 +2528,7 @@ create_part() {
             info "71"
             vgcreate vg0 /dev/${xda}*1 -f -y
             info "72"
-            lvcreate -n root -L 20G vg0 -y
+            lvcreate -n root -L 25G vg0 -y
 
             info "8"
             mkfs.ext4 -F $ext4_opts /dev/vg0/root
