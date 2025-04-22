@@ -2453,14 +2453,14 @@ create_part() {
         # https://gitlab.alpinelinux.org/alpine/alpine-conf/-/blob/3.18.1/setup-disk.in?ref_type=tags#L908
         # 而且 alpine 的 extlinux 不兼容 64bit ext4
         [ "$distro" = alpine ] && ext4_opts="-O ^64bit" || ext4_opts=
-        apk add lvm2
-        info "Create Part LVM started"
+        info "Create Partitions started"
         if is_efi; then
             # efi
             parted /dev/$xda -s -- \
                 mklabel gpt \
                 mkpart '" "' fat32 1MiB 101MiB \
-                mkpart '" "' ext4 101MiB 100% \
+                mkpart '" "' ext4 101MiB 25GiB \
+                mkpart '" "' ext4 25GiB 100% \
                 set 1 boot on
             update_part
 
@@ -2468,29 +2468,27 @@ create_part() {
             mkfs.fat /dev/${xda}*1
             info "2"
 
-            pvcreate /dev/${xda}*2
-            vgcreate vg0 /dev/${xda}*2
-            lvcreate -n root -L 25G vg0
+            mkfs.ext4 -F $ext4_opts /dev/${xda}*2
             info "3"
-
-            mkfs.ext4 -F $ext4_opts /dev/vg0/root
-            info "4"
+            
+            # Optionally format the third partition if needed
+            # mkfs.ext4 -F $ext4_opts /dev/${xda}*3
         elif is_xda_gt_2t; then
             # bios > 2t
             parted /dev/$xda -s -- \
                 mklabel gpt \
                 mkpart '" "' ext4 1MiB 2MiB \
-                mkpart '" "' ext4 2MiB 100% \
+                mkpart '" "' ext4 2MiB 25GiB \
+                mkpart '" "' ext4 25GiB 100% \
                 set 1 bios_grub on
             update_part
             info "4"
 
-            pvcreate /dev/${xda}*2
-            vgcreate vg0 /dev/${xda}*2
-            lvcreate -n root -L 25G vg0
-
+            mkfs.ext4 -F $ext4_opts /dev/${xda}*2
             info "5"
-            mkfs.ext4 -F $ext4_opts /dev/vg0/root
+            
+            # Optionally format the third partition if needed
+            # mkfs.ext4 -F $ext4_opts /dev/${xda}*3
         else
             info "6"
             # bios <= 2t
@@ -2519,20 +2517,17 @@ create_part() {
             info "61"
             parted /dev/$xda -s -- \
                 mklabel msdos \
-                mkpart primary ext4 1MiB 100% \
+                mkpart primary ext4 1MiB 25GiB \
+                mkpart primary ext4 25GiB 100% \
                 set 1 boot on
             update_part
 
             info "7"
-            pvcreate /dev/${xda}*1 -ff -y
+            mkfs.ext4 -F $ext4_opts /dev/${xda}*1
             info "71"
-            vgcreate vg0 /dev/${xda}*1 -f -y
+            # Optionally format the second partition if needed
+            # mkfs.ext4 -F $ext4_opts /dev/${xda}*2
             info "72"
-            lvcreate -n root -L 25G vg0 -y
-
-            info "8"
-            mkfs.ext4 -F $ext4_opts /dev/vg0/root
-            info "81"
         fi
     else
         # 安装红帽系或ubuntu
