@@ -5025,8 +5025,8 @@ mount_part_basic_layout() {
 
     # 挂载系统分区
     mkdir -p $os_dir
-    # mount -t ext4 /dev/${xda}*${os_part_num} $os_dir
-    mount -t ext4 /dev/mapper/vg0-root $os_dir
+    mount -t ext4 /dev/${xda}*${os_part_num} $os_dir
+    # mount -t ext4 /dev/mapper/vg0-root $os_dir
 
     # 挂载 efi 分区
     if is_efi; then
