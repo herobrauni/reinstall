@@ -2453,12 +2453,12 @@ create_part() {
         # https://gitlab.alpinelinux.org/alpine/alpine-conf/-/blob/3.18.1/setup-disk.in?ref_type=tags#L908
         # 而且 alpine 的 extlinux 不兼容 64bit ext4
         [ "$distro" = alpine ] && ext4_opts="-O ^64bit" || ext4_opts=
-        is_xda_gt_40g() {
+        is_xda_gt_X() {
             # Get disk size in bytes
             local disk_size_bytes=$(blockdev --getsize64 "/dev/$xda")
             
-            # Convert 40GB to bytes (40 * 1024^3)
-            local forty_gb_bytes=$((40 * 1024 * 1024 * 1024))
+            # Convert 30GB to bytes (30 * 1024^3)
+            local forty_gb_bytes=$((30 * 1024 * 1024 * 1024))
             
             # Compare and return status
             [ "$disk_size_bytes" -gt "$forty_gb_bytes" ]
@@ -2466,7 +2466,7 @@ create_part() {
         info "Create Partitions started"
         if is_efi; then
             # efi
-            if is_xda_gt_40g; then
+            if is_xda_gt_X; then
                 parted /dev/$xda -s -- \
                     mklabel gpt \
                     mkpart '" "' fat32 1MiB 101MiB \
@@ -2502,7 +2502,7 @@ create_part() {
             fi
         elif is_xda_gt_2t; then
             # bios > 2t
-            if is_xda_gt_40g; then
+            if is_xda_gt_X; then
                 parted /dev/$xda -s -- \
                     mklabel gpt \
                     mkpart '" "' ext4 1MiB 2MiB \
@@ -2538,7 +2538,7 @@ create_part() {
             update_part
             info "61"
             
-            if is_xda_gt_40g; then
+            if is_xda_gt_X; then
                 parted /dev/$xda -s -- \
                     mklabel msdos \
                     mkpart primary ext4 1MiB 25GiB \
