@@ -2535,7 +2535,7 @@ create_part() {
             # bios <= 2t
             apk add wipefs sgdisk
             sgdisk -Z /dev/$xda
-            update_part
+            # update_part
             info "61"
             
             if is_xda_gt_X; then
