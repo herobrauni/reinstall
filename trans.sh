@@ -1611,6 +1611,7 @@ $(del_comment_lines </configs/ssh_keys | del_empty_lines | quote_line | add_spac
 
     del_empty_lines <<EOF | add_space 2 | add_newline both |
 ############### Add by reinstall.sh ###############
+environment.systemPackages = with pkgs; [ python3 ];
 $nix_bootloader
 $nix_swap
 $nix_substituters
