@@ -2459,10 +2459,11 @@ create_part() {
             local disk_size_bytes=$(blockdev --getsize64 "/dev/$xda")
             
             # Convert 30GB to bytes (30 * 1024^3)
-            local forty_gb_bytes=$((30 * 1024 * 1024 * 1024))
+            local min_size_in_bytes=$((55 * 1024 * 1024 * 1024))
+            local max_size_in_bytes=$((210 * 1024 * 1024 * 1024))
             
             # Compare and return status
-            [ "$disk_size_bytes" -gt "$forty_gb_bytes" ]
+            [ "$disk_size_bytes" -gt "$min_size_in_bytes" ] && [ "$disk_size_bytes" -lt "$max_size_in_bytes" ]
         }
         info "Create Partitions started"
         if is_efi; then
