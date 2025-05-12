@@ -2471,8 +2471,8 @@ create_part() {
             if is_xda_gt_X; then
                 parted /dev/$xda -s -- \
                     mklabel gpt \
-                    mkpart '" "' fat32 1MiB 101MiB \
-                    mkpart '" "' ext4 101MiB 25GiB \
+                    mkpart '" "' fat32 1MiB 501MiB \
+                    mkpart '" "' ext4 501MiB 25GiB \
                     mkpart '" "' ext4 25GiB 100% \
                     set 1 boot on
                 update_part
@@ -2490,8 +2490,8 @@ create_part() {
                 # For disks <= 40GB, create single partition
                 parted /dev/$xda -s -- \
                     mklabel gpt \
-                    mkpart '" "' fat32 1MiB 101MiB \
-                    mkpart '" "' ext4 101MiB 100% \
+                    mkpart '" "' fat32 1MiB 501MiB \
+                    mkpart '" "' ext4 501MiB 100% \
                     set 1 boot on
                 update_part
 
