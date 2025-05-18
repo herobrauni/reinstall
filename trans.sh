@@ -2453,8 +2453,8 @@ create_part() {
             if is_xda_gt_X; then
             parted /dev/$xda -s -- \
                 mklabel gpt \
-                mkpart '" "' ext4 1MiB 30GB \
-                mkpart '" "' ext4 30GB 100%
+                mkpart '" "' ext4 1MiB 25GiB \
+                mkpart '" "' ext4 25GiB 100%
             else
             parted /dev/$xda -s -- \
                 mklabel gpt \
@@ -5013,49 +5013,49 @@ resize_after_install_cloud_image() {
         < <(parted -msf /dev/$xda 'unit b print' | tail -1)
     last_part_end=$(echo $last_part_end | sed 's/B//')
 
-    if [ $((disk_end - last_part_end)) -ge 0 ]; then
-        printf "yes" | parted /dev/$xda resizepart $last_part_num 100% ---pretend-input-tty
-        update_part
+    # if [ $((disk_end - last_part_end)) -ge 0 ]; then
+    #     printf "yes" | parted /dev/$xda resizepart $last_part_num 100% ---pretend-input-tty
+    #     update_part
 
-        mkdir -p /os
+    #     mkdir -p /os
 
-        # lvm ?
-        # 用 cloud-utils-growpart？
-        case "$last_part_fs" in
-        ext4)
-            # debian ci
-            apk add e2fsprogs-extra
-            e2fsck -p -f /dev/$xda*$last_part_num
-            resize2fs /dev/$xda*$last_part_num
-            apk del e2fsprogs-extra
-            ;;
-        xfs)
-            # opensuse ci
-            apk add xfsprogs-extra
-            mount /dev/$xda*$last_part_num /os
-            xfs_growfs /dev/$xda*$last_part_num
-            umount /os
-            apk del xfsprogs-extra
-            ;;
-        btrfs)
-            # fedora ci
-            apk add btrfs-progs
-            mount /dev/$xda*$last_part_num /os
-            btrfs filesystem resize max /os
-            umount /os
-            apk del btrfs-progs
-            ;;
-        ntfs)
-            # windows dd
-            apk add ntfs-3g-progs
-            echo y | ntfsresize /dev/$xda*$last_part_num
-            ntfsfix -d /dev/$xda*$last_part_num
-            apk del ntfs-3g-progs
-            ;;
-        esac
-        update_part
-        parted /dev/$xda -s print
-    fi
+    #     # lvm ?
+    #     # 用 cloud-utils-growpart？
+    #     case "$last_part_fs" in
+    #     ext4)
+    #         # debian ci
+    #         apk add e2fsprogs-extra
+    #         e2fsck -p -f /dev/$xda*$last_part_num
+    #         resize2fs /dev/$xda*$last_part_num
+    #         apk del e2fsprogs-extra
+    #         ;;
+    #     xfs)
+    #         # opensuse ci
+    #         apk add xfsprogs-extra
+    #         mount /dev/$xda*$last_part_num /os
+    #         xfs_growfs /dev/$xda*$last_part_num
+    #         umount /os
+    #         apk del xfsprogs-extra
+    #         ;;
+    #     btrfs)
+    #         # fedora ci
+    #         apk add btrfs-progs
+    #         mount /dev/$xda*$last_part_num /os
+    #         btrfs filesystem resize max /os
+    #         umount /os
+    #         apk del btrfs-progs
+    #         ;;
+    #     ntfs)
+    #         # windows dd
+    #         apk add ntfs-3g-progs
+    #         echo y | ntfsresize /dev/$xda*$last_part_num
+    #         ntfsfix -d /dev/$xda*$last_part_num
+    #         apk del ntfs-3g-progs
+    #         ;;
+    #     esac
+    #     update_part
+    #     parted /dev/$xda -s print
+    # fi
 }
 
 mount_part_basic_layout() {
