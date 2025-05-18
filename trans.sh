@@ -2278,6 +2278,17 @@ create_part() {
     if is_efi; then
         apk add dosfstools
     fi
+    is_xda_gt_X() {
+        # Get disk size in bytes
+        local disk_size_bytes=$(blockdev --getsize64 "/dev/$xda")
+        
+        # Convert 30GB to bytes (30 * 1024^3)
+        local min_size_in_bytes=$((55 * 1024 * 1024 * 1024))
+        local max_size_in_bytes=$((210 * 1024 * 1024 * 1024))
+        
+        # Compare and return status
+        [ "$disk_size_bytes" -gt "$min_size_in_bytes" ] && [ "$disk_size_bytes" -lt "$max_size_in_bytes" ]
+    }
 
     # 清除分区签名
     # TODO: 先检测iso链接/各种链接
@@ -2439,10 +2450,17 @@ create_part() {
         else
             # 使用 dd qcow2
             # fedora debian opensuse arch gentoo
+            if is_xda_gt_X; then
+            parted /dev/$xda -s -- \
+                mklabel gpt \
+                mkpart '" "' ext4 1MiB 30GB \
+                mkpart '" "' ext4 30GB 100%
+            else
             parted /dev/$xda -s -- \
                 mklabel gpt \
                 mkpart '" "' ext4 1MiB -$installer_part_size \
                 mkpart '" "' ext4 -$installer_part_size 100%
+            fi
             update_part
 
             mkfs.ext4 -F -L os /dev/$xda*1        #1 os
@@ -2454,17 +2472,6 @@ create_part() {
         # https://gitlab.alpinelinux.org/alpine/alpine-conf/-/blob/3.18.1/setup-disk.in?ref_type=tags#L908
         # 而且 alpine 的 extlinux 不兼容 64bit ext4
         [ "$distro" = alpine ] && ext4_opts="-O ^64bit" || ext4_opts=
-        is_xda_gt_X() {
-            # Get disk size in bytes
-            local disk_size_bytes=$(blockdev --getsize64 "/dev/$xda")
-            
-            # Convert 30GB to bytes (30 * 1024^3)
-            local min_size_in_bytes=$((55 * 1024 * 1024 * 1024))
-            local max_size_in_bytes=$((210 * 1024 * 1024 * 1024))
-            
-            # Compare and return status
-            [ "$disk_size_bytes" -gt "$min_size_in_bytes" ] && [ "$disk_size_bytes" -lt "$max_size_in_bytes" ]
-        }
         info "Create Partitions started"
         if is_efi; then
             # efi
